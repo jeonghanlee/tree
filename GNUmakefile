@@ -22,6 +22,9 @@
 #
 # 2022-05-08 : Rewritten Makefile for Cross Compiler of Linux
 
+
+
+
 DESTDIR?=
 BINDIR?= $(PREFIX)bin
 EXE = tree
@@ -37,7 +40,7 @@ OBJS=$(addsuffix .o,$(basename $(SRCS)))
 
 #
 # Our target OS is linux-arm (Very old)
-CFLAGS=-O2 -Wall -fomit-frame-pointer
+CFLAGS=-O2 -Wall -fomit-frame-pointer -std=gnu99
 
 .PHONY: clean install uninstall 
 
