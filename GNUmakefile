@@ -51,11 +51,12 @@ all: $(EXE)
 $(EXE): $(OBJS)
 	$(LINK.c) $^ -o $@
 
-.c.o :
+%.o: %.c
 	$(COMPILE.c) $(OUTPUT_OPTION) $<
 
 clean:
-	$(RM) -fr $(EXE) $(OBJS)
+	$(RM) -r $(EXE) $(OBJS)
+
 
 install: $(BIN)
 	install -DT -m 755 $(EXE) $(DESTDIR)$(BINDIR)/$(EXE)
