@@ -22,7 +22,7 @@
 #
 # 2022-05-08 : Rewritten Makefile for Cross Compiler of Linux
 
-
+TOP:=$(CURDIR)
 
 
 DESTDIR?=
