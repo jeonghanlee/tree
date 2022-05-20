@@ -59,13 +59,13 @@ clean:
 
 
 install: $(BIN)
-	install -DT -m 755 $(EXE) $(DESTDIR)$(BINDIR)/$(EXE)
+	install -DT -m 755 $(EXE) $(DESTDIR)/$(BINDIR)/$(EXE)
 
 distclean: clean
 	@$(RM) $(BIN)
 
 uninstall: 
-	$(RM) -v $(DESTDIR)$(BINDIR)/$(EXE)
+	$(RM) -v $(DESTDIR)/$(BINDIR)/$(EXE)
 
 PRINT.%:
 	@echo $* = $($*)
