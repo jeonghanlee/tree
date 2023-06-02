@@ -9,7 +9,7 @@ handy to peruse a directory tree though, especially when someone is trying to
 hide something from you.
 
   The main distribution site for tree is here:
-  http://oldmanprogrammer.net/code.php?src=tree
+  http://oldmanprogrammer.net/source.php?dir=projects/tree
 
   Backup GIT sites are:
   https://gitlab.com/OldManProgrammer/unix-tree
@@ -278,6 +278,45 @@ Erik Skultety
 
 Saniya Maheshwari / Mig-hub ? / Carlos Pinto
  - Reported various issues with --gitignore
+
+Piotr Andruszkow
+ - Suggested adding support for --info and --gitignore for the --fromfile
+   option.
+
+Kenta Arai
+ - Add NULL guard for json_printinfo() and xml_printinfo() (and fix ftype
+   printing for XML)
+ - Fix getcharset() to not return a getenv() pointer.
+
+Sebastian Rose
+ - Another attempt at fixing extraneous /'s in HTML URLs/output.
+
+Dave Rice
+ - Fixed XML output
+
+Timm Fitschen
+ - Suggest adding support for the NO_COLOR environment variable.
+
+Chentao Credungtao
+ - Suggested supporting symbolic links in --fromfile (--fflinks option)
+
+Sith Wijesinghe and Matthew Sessions
+ - Remove many C90 isms to make compiling with C90 compilers easier.
+
+simonpmind (gitlab)
+ - Reported issue where following links while doing JSON output would lead to
+   incorrect JSON output.
+
+German Lashevich
+ - Reported an issue where .info patterns relative to the .info file that did
+   not use a wildcard for matching the prefix were not matching files properly.
+
+Javier Jaramago Fernández
+ - Reported a buffer overflow in listdir() when file names are allowed to be
+   longer than 256 characters (like when using fromfile.)
+
+6ramr (gitlab)
+ - Reported issue with following symbolic links when a full tree was gathered.
 
 And many others whom I've failed to keep track of.  I should have started
 this list years ago.

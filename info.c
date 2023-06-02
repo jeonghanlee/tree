@@ -1,5 +1,5 @@
 /* $Copyright: $
- * Copyright (c) 1996 - 2022 by Steve Baker (ice@mama.indstate.edu)
+ * Copyright (c) 1996 - 2023 by Steve Baker (ice@mama.indstate.edu)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,36 +28,49 @@
  */
 extern FILE *outfile;
 extern const struct linedraw *linedraw;
+extern char xpattern[PATH_MAX];
 
 struct infofile *infostack = NULL;
 
 struct comment *new_comment(struct pattern *phead, char **line, int lines)
 {
+  int i;
+
   struct comment *com = xmalloc(sizeof(struct comment));
   com->pattern = phead;
   com->desc = xmalloc(sizeof(char *) * (lines+1));
-  int i;
   for(i=0; i < lines; i++) com->desc[i] = line[i];
   com->desc[i] = NULL;
   com->next = NULL;
   return com;
 }
 
-struct infofile *new_infofile(char *path)
+struct infofile *new_infofile(char *path, bool checkparents)
 {
-  char buf[PATH_MAX];
+  struct stat st;
+  char buf[PATH_MAX], rpath[PATH_MAX];
   struct infofile *inf;
   struct comment *chead = NULL, *cend = NULL, *com;
   struct pattern *phead = NULL, *pend = NULL, *p;
   char *line[PATH_MAX];
   FILE *fp;
-  int lines = 0;
+  int i, lines = 0;
 
-  if (strcmp(path,INFO_PATH) == 0) fp = fopen(path, "r");
-  else {
+  i = stat(path, &st);
+  if (i < 0 || !S_ISREG(st.st_mode)) {
     snprintf(buf, PATH_MAX, "%s/.info", path);
     fp = fopen(buf, "r");
-  }
+
+    if (fp == NULL && checkparents) {
+      strcpy(rpath, path);
+      while ((fp == NULL) && (strcmp(rpath, "/") != 0)) {
+	snprintf(buf, PATH_MAX, "%.*s/..", PATH_MAX-4, rpath);
+	if (realpath(buf, rpath) == NULL) break;
+	snprintf(buf, PATH_MAX, "%.*s/.info", PATH_MAX-7, rpath);
+	fp = fopen(buf, "r");
+      }
+    }
+  } else fp = fopen(path, "r");
   if (fp == NULL) return NULL;
 
   while (fgets(buf, PATH_MAX, fp) != NULL) {
@@ -69,16 +82,16 @@ struct infofile *new_infofile(char *path)
       line[lines++] = scopy(buf+1);
     } else {
       if (lines) {
-	// Save previous pattern/message:
+	/* Save previous pattern/message: */
 	if (phead) {
 	  com = new_comment(phead, line, lines);
 	  if (!chead) chead = cend = com;
 	  else cend = cend->next = com;
 	} else {
-	  // Accumulated info message lines w/ no associated pattern?
-	  for(int i=0; i < lines; i++) free(line[i]);
+	  /* Accumulated info message lines w/ no associated pattern? */
+	  for(i=0; i < lines; i++) free(line[i]);
 	}
-	// Reset for next pattern/message:
+	/* Reset for next pattern/message: */
 	phead = pend = NULL;
 	lines = 0;
       }
@@ -92,7 +105,7 @@ struct infofile *new_infofile(char *path)
     if (!chead) chead = cend = com;
     else cend = cend->next = com;
   } else {
-    for(int i=0; i < lines; i++) free(line[i]);
+    for(i=0; i < lines; i++) free(line[i]);
   }
 
   fclose(fp);
@@ -114,12 +127,15 @@ void push_infostack(struct infofile *inf)
 
 struct infofile *pop_infostack(void)
 {
-  struct infofile *inf = infostack;
+  struct infofile *inf;
   struct comment *cn, *cc;
   struct pattern *p, *c;
-  infostack = infostack->next;
+  int i;
 
+  inf = infostack;
   if (inf == NULL) return NULL;
+
+  infostack = infostack->next;
 
   for(cn = cc = inf->comments; cn != NULL; cc = cn) {
     cn = cn->next;
@@ -127,7 +143,7 @@ struct infofile *pop_infostack(void)
       p=p->next;
       free(c->pattern);
     }
-    for(int i=0; cc->desc[i] != NULL; i++) free(cc->desc[i]);
+    for(i=0; cc->desc[i] != NULL; i++) free(cc->desc[i]);
     free(cc->desc);
     free(cc);
   }
@@ -149,10 +165,15 @@ struct comment *infocheck(char *path, char *name, int top, int isdir)
   if (inf == NULL) return NULL;
 
   for(inf = infostack; inf != NULL; inf = inf->next) {
+    int fpos = sprintf(xpattern, "%s/", inf->path);
+
     for(com = inf->comments; com != NULL; com = com->next) {
       for(p = com->pattern; p != NULL; p = p->next) {
 	if (patmatch(path, p->pattern, isdir) == 1) return com;
 	if (top && patmatch(name, p->pattern, isdir) == 1) return com;
+
+	sprintf(xpattern + fpos, "%s", p->pattern);
+	if (patmatch(path, xpattern, isdir) == 1) return com;
       }
     }
     top = 0;
