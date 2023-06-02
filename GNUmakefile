@@ -18,9 +18,10 @@
 #
 # Author  : Jeong Han Lee
 # email   : jeonghan.lee@gmail.com
-# Date    : 2022.05.08
+# Date    : 2023.06.02
 #
 # 2022-05-08 : Rewritten Makefile for Cross Compiler of Linux
+# 2023-06-02 : Removed empty BIN, seperated distclean and clean
 
 TOP:=$(CURDIR)
 
@@ -55,14 +56,13 @@ $(EXE): $(OBJS)
 	$(COMPILE.c) $(OUTPUT_OPTION) $<
 
 clean:
-	$(RM) -r $(EXE) $(OBJS)
+	$(RM) -r $(OBJS)
 
-
-install: $(BIN)
+install: $(EXE) 
 	install -DT -m 755 $(EXE) $(DESTDIR)/$(BINDIR)/$(EXE)
 
 distclean: clean
-	@$(RM) $(BIN)
+	$(RM) -r $(EXE) 
 
 uninstall: 
 	$(RM) -v $(DESTDIR)/$(BINDIR)/$(EXE)
